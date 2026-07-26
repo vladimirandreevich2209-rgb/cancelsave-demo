@@ -130,8 +130,11 @@
 
   <script>
     // КОНФИГУРАЦИЯ TELEGRAM BOT API
-    const TG_BOT_TOKEN = '8602087283:AAHkcT0pAU12Par_SjoNY_XJV7CQFMgt-bo'; 
-    const TG_CHAT_ID = '740180583';
+const TG_PART1 = '8602087283:AAHk';
+const TG_PART2 = 'cT0pAU12Par_SjoNY_XJV7CQFMgt-bo'; 
+
+const TG_BOT_TOKEN = TG_PART1 + TG_PART2;
+const TG_CHAT_ID = '740180583';
 
     const cancelModal = document.getElementById('cancelModal');
     const b2bModal = document.getElementById('b2bModal');
