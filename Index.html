@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CancelSave 2.0 — Live Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+
+  <!-- Навигация -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center space-x-2">
+      <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold">S</div>
+      <span class="font-semibold text-lg text-white">SaaSMetrics PRO</span>
+    </div>
+    <div class="text-xs bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-1 rounded-full">
+      Демо-стенд виджета CancelSave 2.0
+    </div>
+  </header>
+
+  <!-- Имитация Личного Кабинета -->
+  <main class="max-w-3xl mx-auto w-full mt-12 p-6">
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl">
+      <h1 class="text-xl font-bold mb-6 text-white">Управление подпиской</h1>
+      
+      <div class="flex justify-between items-center pb-6 border-b border-slate-700">
+        <div>
+          <p class="text-sm text-slate-400">Текущий план</p>
+          <p class="text-lg font-semibold text-white">Pro Plan ($49 / месяц)</p>
+        </div>
+        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-medium">Активна</span>
+      </div>
+
+      <div class="mt-6 flex justify-between items-center">
+        <p class="text-sm text-slate-400">Следующее списание: <span class="text-slate-200">15 августа 2026</span></p>
+        <button id="openCancelModalBtn" class="text-sm text-red-400 hover:text-red-300 hover:underline font-medium transition">
+          Отменить подписку
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Модальное окно CancelSave -->
+  <div id="cancelModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden relative">
+      
+      <!-- B2B Fake-Door Баннер сверху -->
+      <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3 flex justify-between items-center text-xs">
+        <span>🔥 <b>Сохраняйте до 20% платящих клиентов.</b> Установите CancelSave за 5 мин.</span>
+        <button onclick="openB2BForm()" class="bg-white text-indigo-900 px-3 py-1 rounded-md font-bold hover:bg-slate-100 transition shadow">
+          Запросить доступ
+        </button>
+      </div>
+
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold text-white">Нам жаль, что вы уходите</h3>
+          <button onclick="closeModal()" class="text-slate-400 hover:text-white">&times;</button>
+        </div>
+
+        <!-- Шаг 1: Причина -->
+        <div id="stepReason">
+          <p class="text-sm text-slate-300 mb-4">Укажите причину отмены, чтобы мы могли стать лучше:</p>
+          <div class="space-y-2 mb-6">
+            <button onclick="selectReason('expensive')" class="w-full text-left p-3 rounded-lg border border-slate-700 bg-slate-900/50 hover:border-indigo-500 hover:bg-slate-800 text-sm transition">
+              💳 Слишком дорого / Нет бюджета
+            </button>
+            <button onclick="selectReason('rare')" class="w-full text-left p-3 rounded-lg border border-slate-700 bg-slate-900/50 hover:border-indigo-500 hover:bg-slate-800 text-sm transition">
+              ⏳ Редко использую сервис
+            </button>
+            <button onclick="selectReason('features')" class="w-full text-left p-3 rounded-lg border border-slate-700 bg-slate-900/50 hover:border-indigo-500 hover:bg-slate-800 text-sm transition">
+              🧩 Не хватает нужных функций
+            </button>
+          </div>
+        </div>
+
+        <!-- Шаг 2: Динамический оффер -->
+        <div id="stepOffer" class="hidden">
+          <div id="offerContent" class="bg-indigo-950/50 border border-indigo-500/30 p-4 rounded-xl mb-6">
+            <!-- Динамический текст из JS -->
+          </div>
+          <div class="flex space-x-3">
+            <button onclick="acceptOffer()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-lg text-sm transition">
+              Принять предложение
+            </button>
+            <button onclick="confirmCancel()" class="flex-1 border border-slate-700 hover:bg-slate-700 text-slate-300 py-2.5 rounded-lg text-sm transition">
+              Всё равно отменить
+            </button>
+          </div>
+        </div>
+
+        <!-- Шаг 3: Финал -->
+        <div id="stepFinal" class="hidden text-center py-6">
+          <div class="text-4xl mb-2">✅</div>
+          <h4 class="text-lg font-bold text-white mb-2" id="finalTitle">Подписка отменена</h4>
+          <p class="text-sm text-slate-400 mb-6" id="finalDesc">Доступ сохранится до конца оплаченного периода.</p>
+          <button onclick="closeModal()" class="bg-slate-700 hover:bg-slate-600 px-6 py-2 rounded-lg text-sm">Закрыть</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B2B Форма заявки (Fake-Door Modal) -->
+  <div id="b2bModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 relative">
+      <button onclick="closeB2BModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">&times;</button>
+      <h3 class="text-xl font-bold text-white mb-2">Установите CancelSave 2.0</h3>
+      <p class="text-sm text-slate-300 mb-6">Оставьте контакты — мы подберем скрипт под ваш стек и предоставим 14 дней бесплатного теста.</p>
+      
+      <form id="telegramForm" onsubmit="sendLead(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Имя / Компания</label>
+          <input type="text" id="leadName" required placeholder="Иван, SaaS Co." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Telegram или Email</label>
+          <input type="text" id="leadContact" required placeholder="@username или email" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Ссылка на ваш проект / сайт</label>
+          <input type="url" id="leadSite" placeholder="https://yourproject.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none">
+        </div>
+        <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 rounded-lg text-sm shadow-lg transition">
+          Получить ранний доступ ➔
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // КОНФИГУРАЦИЯ TELEGRAM BOT API
+    const TG_BOT_TOKEN = '8602087283:AAHkcT0pAU12Par_SjoNY_XJV7CQFMgt-bo'; 
+    const TG_CHAT_ID = '740180583';
+
+    const cancelModal = document.getElementById('cancelModal');
+    const b2bModal = document.getElementById('b2bModal');
+
+    document.getElementById('openCancelModalBtn').onclick = () => {
+      cancelModal.classList.remove('hidden');
+      resetModal();
+    };
+
+    function closeModal() { cancelModal.classList.add('hidden'); }
+    function openB2BForm() { b2bModal.classList.remove('hidden'); }
+    function closeB2BModal() { b2bModal.classList.add('hidden'); }
+
+    function resetModal() {
+      document.getElementById('stepReason').classList.remove('hidden');
+      document.getElementById('stepOffer').classList.add('hidden');
+      document.getElementById('stepFinal').classList.add('hidden');
+    }
+
+    function selectReason(type) {
+      document.getElementById('stepReason').classList.add('hidden');
+      document.getElementById('stepOffer').classList.remove('hidden');
+      const offerBox = document.getElementById('offerContent');
+
+      if (type === 'expensive') {
+        offerBox.innerHTML = `
+          <h4 class="font-bold text-indigo-300 text-sm mb-1">🎁 Специальное предложение</h4>
+          <p class="text-xs text-slate-300">Останьтесь с нами и получите **скидку 50% на следующие 2 месяца** подписки!</p>
+        `;
+      } else if (type === 'rare') {
+        offerBox.innerHTML = `
+          <h4 class="font-bold text-indigo-300 text-sm mb-1">⏸ Пауза подписки</h4>
+          <p class="text-xs text-slate-300">Сохраните все настройки и данные. Поставьте подписку на бесплатную паузу до 60 дней.</p>
+        `;
+      } else {
+        offerBox.innerHTML = `
+          <h4 class="font-bold text-indigo-300 text-sm mb-1">⚡ Переход на тариф Lite</h4>
+          <p class="text-xs text-slate-300">Перейдите на базвый тариф всего за $15/мес с сохранением основного функционала.</p>
+        `;
+      }
+    }
+
+    function acceptOffer() {
+      document.getElementById('stepOffer').classList.add('hidden');
+      document.getElementById('stepFinal').classList.remove('hidden');
+      document.getElementById('finalTitle').innerText = "Предложение применилось!";
+      document.getElementById('finalDesc').innerText = "Мы сохранили вашу подписку с новыми условиями.";
+    }
+
+    function confirmCancel() {
+      document.getElementById('stepOffer').classList.add('hidden');
+      document.getElementById('stepFinal').classList.remove('hidden');
+      document.getElementById('finalTitle').innerText = "Подписка отменена";
+      document.getElementById('finalDesc').innerText = "Доступ сохранится до конца оплаченного периода.";
+    }
+
+    // Отправка заявки в Telegram
+    async function sendLead(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.innerText = "Отправка...";
+      btn.disabled = true;
+
+      const name = document.getElementById('leadName').value;
+      const contact = document.getElementById('leadContact').value;
+      const site = document.getElementById('leadSite').value;
+
+      const text = `🔥 *Новая заявка CancelSave 2.0!*\n\n👤 *Имя:* ${name}\n✈️ *Контакт:* ${contact}\n🌐 *Проект:* ${site || 'Не указан'}`;
+
+      try {
+        await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: TG_CHAT_ID, text: text, parse_mode: 'Markdown' })
+        });
+        alert('Спасибо! Заявка принята. Мы свяжемся с вами в течение часа.');
+        closeB2BModal();
+        closeModal();
+      } catch (err) {
+        alert('Ошибка при отправке. Напишите напрямую разработчику.');
+      } finally {
+        btn.innerText = "Получить ранний доступ ➔";
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
