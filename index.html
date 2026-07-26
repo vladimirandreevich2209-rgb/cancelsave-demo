@@ -192,34 +192,37 @@ const TG_CHAT_ID = '740180583';
     }
 
     // Отправка заявки в Telegram
-    async function sendLead(e) {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      btn.innerText = "Отправка...";
-      btn.disabled = true;
+async function sendLead(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.innerText = "Отправка...";
+  btn.disabled = true;
 
-      const name = document.getElementById('leadName').value;
-      const contact = document.getElementById('leadContact').value;
-      const site = document.getElementById('leadSite').value;
+  const name = document.getElementById('leadName').value;
+  const contact = document.getElementById('leadContact').value;
+  const site = document.getElementById('leadSite').value;
 
-      const text = `🔥 *Новая заявка CancelSave 2.0!*\n\n👤 *Имя:* ${name}\n✈️ *Контакт:* ${contact}\n🌐 *Проект:* ${site || 'Не указан'}`;
+  try {
+    const res = await fetch('/api/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, contact, site })
+    });
 
-      try {
-        await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: TG_CHAT_ID, text: text, parse_mode: 'Markdown' })
-        });
-        alert('Спасибо! Заявка принята. Мы свяжемся с вами в течение часа.');
-        closeB2BModal();
-        closeModal();
-      } catch (err) {
-        alert('Ошибка при отправке. Напишите напрямую разработчику.');
-      } finally {
-        btn.innerText = "Получить ранний доступ ➔";
-        btn.disabled = false;
-      }
+    if (res.ok) {
+      alert('Спасибо! Заявка принята. Мы свяжемся с вами в течение часа.');
+      closeB2BModal();
+      closeModal();
+    } else {
+      alert('Ошибка при отправке. Попробуйте еще раз.');
     }
+  } catch (err) {
+    alert('Ошибка соединения с сервером.');
+  } finally {
+    btn.innerText = "Получить ранний доступ ➔";
+    btn.disabled = false;
+  }
+}
   </script>
 </body>
 </html>
